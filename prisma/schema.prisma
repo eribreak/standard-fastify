@@ -1,0 +1,22 @@
+// Prisma schema (Prisma 6.19.3)
+//
+// This is the minimal schema for the backend base. It exists to prove the
+// migration/generate flow end-to-end. Add domain models here as modules are
+// built; do not invent tables that have no consumer yet.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Placeholder table used only to validate the migration pipeline.
+// Remove or replace with real domain models when they exist.
+model migration_probe {
+  id         Int      @id @default(autoincrement())
+  name       String   @unique
+  created_at DateTime @default(now())
+}
