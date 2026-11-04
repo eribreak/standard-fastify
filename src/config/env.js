@@ -14,6 +14,7 @@
  * @property {string[]} corsOrigins
  * @property {boolean} swaggerEnabled
  * @property {string} logLevel
+ * @property {string} redisUrl
  */
 
 const REQUIRED_VARS = ['DATABASE_URL'];
@@ -51,6 +52,7 @@ export function loadEnv(env = process.env) {
     corsOrigins,
     swaggerEnabled,
     logLevel: env.LOG_LEVEL || (env.NODE_ENV === 'production' ? 'info' : 'debug'),
+    redisUrl: env.REDIS_URL || 'redis://localhost:6379',
   };
 }
 

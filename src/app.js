@@ -2,8 +2,11 @@ import Fastify from 'fastify';
 import { registerSwagger } from './plugins/swagger.plugin.js';
 import { registerSecurity } from './plugins/security.plugin.js';
 import { registerDatabase } from './plugins/database.plugin.js';
+import { registerRedis } from './plugins/redis.plugin.js';
 import { registerLogging } from './plugins/logging.plugin.js';
+import { registerTracing } from './plugins/tracing.plugin.js';
 import { registerHealthRoutes } from './modules/health/health.route.js';
+import { registerDemoRoutes } from './modules/demo/demo.route.js';
 import { getConfig } from './config/app.config.js';
 import { errorHandler } from './common/errors/error-handler.js';
 
@@ -15,6 +18,7 @@ import { errorHandler } from './common/errors/error-handler.js';
  *
  * @param {object} [options]
  * @param {boolean} [options.skipDatabase=false]
+ * @param {boolean} [options.skipRedis=false]
  * @param {boolean} [options.skipPlugins=false]
  * @returns {Promise<import('fastify').Fastify>}
  */
@@ -24,7 +28,7 @@ export async function buildApp(options = {}) {
     logger: {
       level: config.env.logLevel,
       redact: {
-        paths: ['req.headers.authorization', 'req.headers.cookie', 'DATABASE_URL'],
+        paths: ['req.headers.authorization', 'req.headers.cookie', 'DATABASE_URL', 'REDIS_URL'],
       },
     },
     requestTimeout: 30000,
@@ -34,6 +38,7 @@ export async function buildApp(options = {}) {
   });
 
   await registerLogging(fastify);
+  await registerTracing(fastify);
 
   if (!options.skipPlugins) {
     await registerSecurity(fastify, {
@@ -46,6 +51,10 @@ export async function buildApp(options = {}) {
 
     if (!options.skipDatabase) {
       await registerDatabase(fastify, { databaseUrl: config.env.databaseUrl });
+    }
+
+    if (!options.skipRedis) {
+      await registerRedis(fastify, { redisUrl: config.env.redisUrl });
     }
   }
 
@@ -62,6 +71,8 @@ export async function buildApp(options = {}) {
       }
     },
   });
+
+  registerDemoRoutes(fastify);
 
   await errorHandler(fastify);
 

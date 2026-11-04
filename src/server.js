@@ -1,5 +1,6 @@
 import { buildApp } from './app.js';
 import { getConfig } from './config/app.config.js';
+import { initTracing, shutdownTracing } from './instrumentation.js';
 
 /**
  * Start the HTTP server.
@@ -9,6 +10,11 @@ import { getConfig } from './config/app.config.js';
  */
 export async function startServer() {
   const config = getConfig();
+
+  // Initialize OpenTelemetry before building the app so auto-instrumentation
+  // is active for the entire request lifecycle.
+  initTracing();
+
   const app = await buildApp();
 
   await app.listen({ port: config.env.port, host: config.env.host });
@@ -20,6 +26,7 @@ export async function startServer() {
     } catch (error) {
       app.log.error({ err: error }, 'error during graceful shutdown');
     }
+    await shutdownTracing();
     process.exit(0);
   };
 
