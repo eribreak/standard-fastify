@@ -27,10 +27,16 @@ parentPort.on('message', async (message) => {
     const result = await fn(payload);
     parentPort.postMessage({ id, ok: true, result });
   } catch (error) {
+    // AppError instances carry their own code/httpStatus — serialize them so
+    // the pool can reject with the correct HTTP status instead of a 500.
+    const isAppError =
+      error && typeof error === 'object' && 'code' in error && 'httpStatus' in error;
     parentPort.postMessage({
       id,
       ok: false,
       error: error instanceof Error ? error.message : String(error),
+      code: isAppError ? error.code : undefined,
+      httpStatus: isAppError ? error.httpStatus : undefined,
     });
   }
 });

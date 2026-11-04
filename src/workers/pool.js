@@ -15,6 +15,7 @@
 import { Worker } from 'node:worker_threads';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
+import { AppError } from '../common/errors/AppError.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const WORKER_PATH = path.join(__dirname, 'worker.js');
@@ -129,6 +130,14 @@ export class TaskPool {
 
       if (message.ok) {
         entry.resolve(message.result);
+      } else if (message.code && message.httpStatus) {
+        entry.reject(
+          new AppError({
+            code: message.code,
+            message: message.error,
+            httpStatus: message.httpStatus,
+          })
+        );
       } else {
         entry.reject(new Error(message.error));
       }

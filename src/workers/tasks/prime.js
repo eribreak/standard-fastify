@@ -10,7 +10,12 @@
 export default function primeTask(payload) {
   const limit = Number(payload?.limit ?? 100000);
   if (!Number.isFinite(limit) || limit < 0) {
-    throw new Error('limit must be a non-negative number');
+    const error = new Error('limit must be a non-negative number');
+    // Structured fields survive the worker → pool message boundary and are
+    // mapped back to an HTTP 422 by the centralized error handler.
+    error.code = 'VALIDATION_ERROR';
+    error.httpStatus = 422;
+    throw error;
   }
 
   let count = 0;

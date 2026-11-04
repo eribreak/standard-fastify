@@ -48,7 +48,9 @@ export async function errorHandler(fastify) {
         error: {
           code: error.code,
           message: error.message,
-          details: error.details,
+          // The response contract requires `details` to be present; default
+          // undefined to null so serialization never fails.
+          details: error.details ?? null,
         },
       });
     }

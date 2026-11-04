@@ -116,4 +116,17 @@ export async function cacheInvalidate(fastify, pattern) {
   }
 }
 
-export default { cacheGet, cacheSet, cacheDel, cacheRemember, cacheInvalidate };
+/**
+ * Whether the Redis client is registered and connected.
+ *
+ * @param {import('fastify').Fastify} fastify
+ * @returns {boolean}
+ */
+export function isRedisAvailable(fastify) {
+  if (!fastify.redis) {
+    return false;
+  }
+  return fastify.redis.status === 'ready';
+}
+
+export default { cacheGet, cacheSet, cacheDel, cacheRemember, cacheInvalidate, isRedisAvailable };
